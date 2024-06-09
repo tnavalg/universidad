@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Función que devuelve la hora actual en formato UTC.
+# Ejemplo: 2021-05-14_16-26-31Z
+function now() {
+    date -u +"%Y-%m-%d_%H-%M-%SZ"
+}
+
+BASEDIR=$(dirname "$0")
+BASENAME=$(basename -- "$0")
+LOGDIR=$BASEDIR/$BASENAME'.logs'
+LOGFILE=$LOGDIR/$BASENAME'_'$(now).log
+ORIGEN="/home"
+DESTINO="/media/tank"
+
+# Se valida la existencia del directorio de logs. Se crea en caso de ser necesario
+if [ ! -d "$LOGDIR" ]; then
+    mkdir -p "$LOGDIR"
+fi
+
+# Se indican los argumentos obligatorios que recibirá rsync
+ARGUMENTOSRSYNC="-avz --delete"
+
+# Se indican los argumentos opcionales que recibirá rsync
+if [ -n "$1" ] && [ -f "$1" ]; then
+    ARGUMENTOSRSYNC="$ARGUMENTOSRSYNC --exclude-from=$1"
+fi
+
+# Se arma la ejecución de rsync. Se indican argumentos, origen,
+# destino y se envían las salidas std y err al archivo de log
+rsync $ARGUMENTOSRSYNC "$ORIGEN" "$DESTINO" > "$LOGFILE" 2>&1
+
+exit 0
